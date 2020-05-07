@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Feb 21 10:23:16 2020
+
+@author: Mehdi
+"""
+
+import numpy as np
+from matplotlib import pyplot as plt
+from scipy.interpolate import UnivariateSpline
+
+cristaux = np.array(np.random.normal (10, 0.1, size = 1)) # Cristal initial
+nucleation = np.array(np.random.normal(5, 0.5, size = 2))
+croissance = np.random.uniform(1, 10)
+indice_nucleation = np.array([0]) #Matrice de stockage de la nucleation
+indice_croissance = np.array ([0]) #Matrice de stockage de la croissance
+matrice_etape = np.array([0]) #Matrice temporelle
+moyenne_cristaux = np.array([0]) #matrice de taille moyenne des cristaux
+
+etape = 0
+for etape in range (0,200):
+    if etape < 200: #laisser au max si pas de bimodalite des lois
+        loi_nucleation = int(np.random.randint(5000, 10000) / ((etape+1))) # Loi de nucleation : initialement faible, augmente avec le temps
+        loi_croissance = np.random.uniform(100, 200) * ((etape + 1)/2) # Loi de croissance : initialement forte, diminue avec le temps
+        nucleation = np.array(np.random.normal(np.random.uniform(1, 20), 2, size = loi_nucleation)) 
+        croissance = np.random.normal((loi_croissance), 0.05, len(cristaux)) # croissance aleatoire a chaque etape
+        indice_nucleation = np.append(indice_nucleation, len(nucleation)) #calcul de la matrice de nucleation
+        indice_croissance = np.append(indice_croissance, np.mean(croissance)) #calcul de la matrice de croissance
+        indice_maturite = indice_nucleation / indice_croissance
+        matrice_etape = np.append(matrice_etape, etape)
+        moyenne_cristaux = np.append(moyenne_cristaux, np.mean(cristaux)) #calcul de la matrice des tailles moyennes
+        #print(moyenne_cristaux) #afficher matrice des tailles moyennes
+        #print(indice_maturite) #afficher la matrice maturite
+        #print(matrice_etape) #afficher la matrice temporelle
+        #print(indice_nucleation) #Affichage de la matrice de nucleation
+        #print(indice_croissance) #Affichage de la matrice de croissance
+        #croissance = np.random.uniform(10, 20) / (etape+1) # croissance constante a chaque etape
+        cristaux = cristaux + croissance # A chaque etape, addition de la loi de croissance a la matrice cristaux
+        cristaux = np.append(cristaux, nucleation) # A chaque etape, ajout de la nucleation dans la matrice cristaux
+        intro = "Etape n°" + str(etape + 1)
+        croissance_moyenne = ['Croissance moyenne : ' + str(np.mean(croissance))]
+        taille_moyenne = ['Taille moyenne ' + str(np.mean(cristaux))]
+        csd = [intro, croissance_moyenne, taille_moyenne, cristaux] # Affichage de la liste
+        etape = etape + 1
+        print(csd) # Affichage de la matrice CSD
+        total_cristaux = (len(cristaux))
+        
+        #plt.subplot(1, 3, 1)
+        plt.hist(cristaux, bins = 50,log = True, color = 'red', edgecolor = 'black') # Création d'un histogramme des CSD
+        plt.ylabel('Effectif', size = 12)
+        plt.xlabel('Taille de grain', size = 12)
+        plt.title ('Etape ' + str(etape) + ' : ' + str(total_cristaux) + ' cristaux' + ' (+ ' + str(loi_nucleation) + ' cristaux' + ')', color = 'black', size =12)
+        plt.show() # Affichage de l'histogramme
+                
+        #plt.subplot(1, 3, 3)
+        #plt.plot(matrice_etape, moyenne_cristaux ,'--', color = 'blue') #Histogramme de taille moyenne des cristaux en fonction du temps      
+        #plt.ylabel('Taille moyenne')
+        #plt.xlabel('Etape')
+        #plt.title('Taille moyenne des cristaux')
+        #plt.show()
+    
+    
+    else: #activable en cas de changement dans les parametres des lois au cours de la sequence
+        nucleation = np.array(np.random.normal(2, 0.5, size = 10))
+        croissance = np.random.uniform(1, 2)
+        cristaux = cristaux + croissance
+        cristaux = np.append(cristaux, nucleation)
+        Intro = "Etape n°" + str(etape)
+        csd = [Intro, cristaux]
+        etape = etape + 1
+        print(csd)
+        plt.hist(cristaux,  width = 20, color='blue') # Création d'un histogramme à 10 classes
+        plt.ylabel('Effectif cumulé', size = 12)
+        plt.xlabel('Taille de grains', size = 12)
+        plt.show(csd) # Affichage de l'histogramme
